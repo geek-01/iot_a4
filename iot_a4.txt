@@ -1,0 +1,101 @@
+Step 1: Connect the components to the Raspberry Pi3 board as specified below
+• Servo Motor Data Pin - Gpio 04 
+• Push Button Pin - Gpio 06
+• Dc Motor Positive Pin - Gpio 13 
+• LED Red Pin - GPIO 17
+• LED Green Pin - GPIO 27 
+• LED Blue Pin - GPIO 22
+
+Step 2: Connect the components to MCP3008 
+• Clk To GPIO 16
+• DOUT To GPIO 19
+• DIN To GPIO 20
+• CS To GPIO 25
+• Potentiometer Data Pin to CH0 OG MCP3008
+
+Step 3: Connect All Sensor And Actuators To Raspberry Pi
+Note: Refer the Fritzing for more information on connecting the components
+
+Step 4: Write Python Script In Raspberry Pi To Control Sensor and Actuators
+
+Step 5: Run Python Script
+Code - Raspberry Pi as a Python File
+
+from time import sleep 
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)#GPIO Numbers
+GPIO.setup(04, GPIO.OUT)#Servo motor Data pin
+GPIO.setup(06, GPIO.IN, pull_up_down=GPIO.PUD_UP)#button BOARD 31 
+GPIO.setup(13, GPIO.OUT) #DC MOTOR BOARD 33
+#RGB PIN Setup
+RED = 17 #BOARD 11 GREEN = 27# BORAD 13 BLUE = 22# BOARD 15
+GPIO.setup(RED,GPIO.OUT) GPIO.output(RED ,0) #Set Default GPIO.setup(GREEN ,GPIO.OUT) GPIO.output(GREEN ,0)#Set Default GPIO.setup(BLUE,GPIO.OUT)
+value value
+value
+GPIO.output(BLUE ,0)#set
+#MCP 8003 PINs
+CLK = 16 # BOARD 36 DOUT = 19 # BOARD 35 DIN = 20 # BOARD 38 CS=25 #BOARD22
+Default
+#Set Up the SPI interface pins GPIO.setup([DIN, CLK, CS], GPIO.OUT) GPIO.setup(DOUT, GPIO.IN)
+# 10k trim pot connected to CH0
+potentiometer_adc = 0;
+def readadc(adcnum , clockpin , mosipin , misopin , cspin):
+	if ((adcnum > 7) or (adcnum < 0)): 
+		return -1
+
+	GPIO.output(cspin , True)
+	GPIO.output(clockpin , False) # start 
+	GPIO.output(cspin , False) # bring
+	commandout = adcnum
+	commandout |= 0x18 # start bit + single-ended bit 
+	commandout <<= 3 # we only need to send 5 bits here 
+	for i in range(5):
+		if (commandout & 0x80):
+			GPIO.output(mosipin , True)
+		else: GPIO.output(mosipin , False)
+		commandout <<= 1 
+		GPIO.output(clockpin , True) 
+		GPIO.output(clockpin , False)
+	adcout = 0
+	for i in range(12):
+		GPIO.output(clockpin , True)
+		GPIO.output(clockpin ,False)
+		adcout <<= 1
+		if (GPIO.input(misopin)):
+			adcout |= 0x1
+	GPIO.output(cspin , True)
+	adcout >>= 1 # first bit is ’null’ so drop it return adcout
+
+def read_potentiometer():
+	trim_pot = readadc(potentiometer_adc, CLK, DIN, DOUT, CS)
+	return round(trim_pot / 1024.0, 2)
+
+val =[]# to store RGB values while True:
+#DC MOTOR BUTTON CODE
+button_state = GPIO.input(06)
+if button_state == False:#Buttom pressed
+GPIO.output(13, True)
+print(’Button Pressed...’) # sleep (0.1)
+else: GPIO.output(13, False)
+
+Code for Potentiometer Code ---
+
+sleep (.1) potentio_val=read_potentiometer() print(potentio_val) if(potentio_val <0.30):
+val =[1 ,0 ,0] elif(potentio_val <0.60):
+val =[0 ,1 ,0]
+else:
+val =[0 ,0 ,1] GPIO.output(GREEN,val[0])
+GPIO.output(BLUE,val[1]) GPIO.output(RED,val[2])
+
+Code for Servo Motor ---
+
+p = GPIO.PWM(04, 50)#GPIO 4 50HZ cycle
+p.start(7.5) #duty cycle= length/period ((1.5/200)*100=7.5) try:
+while True: p.ChangeDutyCycle(7.5) #
+sleep (1) # sleep 1 second p.ChangeDutyCycle(2.5) # sleep (1) # sleep 1 second p.ChangeDutyCycle(12.5) #
+turn towards 90 degree turn towards 0 degree turn towards 180 degree
+sleep (1) # except KeyboardInterrupt:
+p.stop() GPIO.cleanup()
+sleep 1
+second
